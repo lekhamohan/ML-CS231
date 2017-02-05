@@ -38,6 +38,8 @@ class TwoLayerNet(object):
     self.params['b1'] = np.zeros(hidden_size)
     self.params['W2'] = std * np.random.randn(hidden_size, output_size)
     self.params['b2'] = np.zeros(output_size)
+    
+    print "Params [w1]",self.params['W1'].shape
 
   def loss(self, X, y=None, reg=0.0):
     """
@@ -74,7 +76,17 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
+    
     pass
+    #print "Shape of X, W1, b1, W2, b2", X.shape, W1.shape, b1.shape, W2.shape, b2.shape
+    #print "len", len(self.params)
+    
+    scores = X.dot(W1) + b1
+    # ReLu
+    scores[scores <= 0] = 0
+    scores = scores.dot(W2) + b2
+    #print "shape of scores", scores.shape
+    
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -85,6 +97,8 @@ class TwoLayerNet(object):
 
     # Compute the loss
     loss = None
+    data_loss = []
+    soft_max_prob = []
     #############################################################################
     # TODO: Finish the forward pass, and compute the loss. This should include  #
     # both the data loss and L2 regularization for W1 and W2. Store the result  #
@@ -93,6 +107,32 @@ class TwoLayerNet(object):
     # regularization loss by 0.5                                                #
     #############################################################################
     pass
+    
+    soft_max_prob.append( np.exp(scores)/np.sum(np.exp(scores), axis=1, keepdims=True)  )  
+       
+    #print "SMP[i]",soft_max_prob  
+    print
+    data_loss = -np.log(soft_max_prob)
+    print  "loss ",data_loss 
+    data_loss = np.sum(data_loss)/N
+    #print "Average data loss is", data_loss
+    print
+    loss = data_loss + 0.5*reg*np.sum(np.square(W1)) + 0.5*reg*np.sum(np.square(W2))
+    
+    
+    '''----------------------------------------------------------------------------------------------------------------------'''    
+    exp_scores = np.exp(scores)
+    probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True) # [N x K]
+    print 
+    print
+
+    # average cross-entropy loss and regularization
+    corect_logprobs = -np.log(probs[range(N), y])
+    print"loss", corect_logprobs
+    data_loss = np.sum(corect_logprobs) / N
+    reg_loss = 0.5 * reg * np.sum(W1 * W1) + 0.5 * reg * np.sum(W2 * W2)
+    loss = data_loss + reg_loss
+    
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################

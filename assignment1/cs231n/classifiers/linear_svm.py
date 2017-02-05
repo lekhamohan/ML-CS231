@@ -20,27 +20,48 @@ def svm_loss_naive(W, X, y, reg):
   - gradient with respect to weights W; an array of same shape as W
   """
   dW = np.zeros(W.shape) # initialize the gradient as zero
-
+  
   # compute the loss and the gradient
   num_classes = W.shape[1]
   num_train = X.shape[0]
   loss = 0.0
+
+  #print "W shape", W.shape
+  #print "X shape", X.shape
+
   for i in xrange(num_train):
     scores = X[i].dot(W)
+    #print "scores", scores
     correct_class_score = scores[y[i]]
+    #print "Y", y
+    #print "y[i]", y[0]
+    #print "Correct class score", correct_class_score
+    
     for j in xrange(num_classes):
+     
       if j == y[i]:
         continue
       margin = scores[j] - correct_class_score + 1 # note delta = 1
       if margin > 0:
         loss += margin
-
+        
+        #Calculating the gradient 
+        #print "Computing the gradient"
+        dW[:,j]  += X[i,:]
+        dW[:,y[i]] -= X[i,:]
+    
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
+  
   loss /= num_train
+  dW /= num_train
 
   # Add regularization to the loss.
   loss += 0.5 * reg * np.sum(W * W)
+  
+  #print "The computed gradient is"
+  dW += W*reg  
+  
 
   #############################################################################
   # TODO:                                                                     #
@@ -50,10 +71,10 @@ def svm_loss_naive(W, X, y, reg):
   # loss is being computed. As a result you may need to modify some of the    #
   # code above to compute the gradient.                                       #
   #############################################################################
-
-
+  
   return loss, dW
-
+  
+    
 
 def svm_loss_vectorized(W, X, y, reg):
   """
@@ -69,7 +90,23 @@ def svm_loss_vectorized(W, X, y, reg):
   # Implement a vectorized version of the structured SVM loss, storing the    #
   # result in loss.                                                           #
   #############################################################################
+    
   pass
+  num_classes = W.shape[1]
+  num_train = X.shape[0]
+  scores = X.dot(W)
+  correct_class_score = np.transpose(scores[np.array(range(num_train)),y])
+  #correct_class_score = scores[np.array(range(num_train)),y]
+
+  #For legal matrix operations, I just did a repmat
+  #tiled_class_score = np.tile(correct_class_score,(10,1))   
+  #tiled_class_score = np.transpose(tiled_class_score)
+
+  #margin = np.maximum(0,scores - tiled_class_score + 1)
+  #print "np.arange", np.arange(num_train)
+  print "CCS", correct_class_score.shape
+  print "scores",scores.shape
+ 
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
