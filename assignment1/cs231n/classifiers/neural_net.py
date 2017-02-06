@@ -98,7 +98,7 @@ class TwoLayerNet(object):
     # Compute the loss
     loss = None
     data_loss = []
-    soft_max_prob = []
+    
     #############################################################################
     # TODO: Finish the forward pass, and compute the loss. This should include  #
     # both the data loss and L2 regularization for W1 and W2. Store the result  #
@@ -108,31 +108,15 @@ class TwoLayerNet(object):
     #############################################################################
     pass
     
-    soft_max_prob.append( np.exp(scores)/np.sum(np.exp(scores), axis=1, keepdims=True)  )  
+    soft_max_prob = np.exp(scores)/np.sum(np.exp(scores), axis=1, keepdims=True)
        
-    #print "SMP[i]",soft_max_prob  
-    print
-    data_loss = -np.log(soft_max_prob)
-    print  "loss ",data_loss 
+    data_loss = -np.log(soft_max_prob[range(N),y])
+    #print  "loss ",data_loss 
     data_loss = np.sum(data_loss)/N
     #print "Average data loss is", data_loss
     print
     loss = data_loss + 0.5*reg*np.sum(np.square(W1)) + 0.5*reg*np.sum(np.square(W2))
-    
-    
-    '''----------------------------------------------------------------------------------------------------------------------'''    
-    exp_scores = np.exp(scores)
-    probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True) # [N x K]
-    print 
-    print
 
-    # average cross-entropy loss and regularization
-    corect_logprobs = -np.log(probs[range(N), y])
-    print"loss", corect_logprobs
-    data_loss = np.sum(corect_logprobs) / N
-    reg_loss = 0.5 * reg * np.sum(W1 * W1) + 0.5 * reg * np.sum(W2 * W2)
-    loss = data_loss + reg_loss
-    
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -145,6 +129,29 @@ class TwoLayerNet(object):
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
     pass
+    
+    dscores = soft_max_prob
+    print "dscores",dscores
+    
+    dscores[range(N),y] -= 1
+    print 
+    print "dscores after -1",dscores
+    dscores /= N
+
+    # W2 and b2hi ketbnoa d in the 
+    grads['W2'] = np.dot(a1.T, dscores)
+    grads['b2'] = np.sum(dscores, axis=0)
+    # next backprop into hidden layer
+    dhidden = np.dot(dscores, W2.T)
+    # backprop the ReLU non-linearity
+    dhidden[a1 <= 0] = 0
+    # finally into W,b
+    grads['W1'] = np.dot(X.T, dhidden)
+    grads['b1'] = np.sum(dhidden, axis=0)
+
+    # add regularization gradient contribution
+    grads['W2'] += reg * W2
+    grads['W1'] += reg * W1
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
