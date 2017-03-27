@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import math, time
 
 class TwoLayerNet(object):
   """
@@ -82,6 +82,7 @@ class TwoLayerNet(object):
     #print "len", len(self.params)
     
     scores = X.dot(W1) + b1
+    hidden_layer = np.maximum(0, np.dot(X, W1) + b1)
     # ReLu
     scores[scores <= 0] = 0
     scores = scores.dot(W2) + b2
@@ -139,12 +140,12 @@ class TwoLayerNet(object):
     dscores /= N
 
     # W2 and b2hi ketbnoa d in the 
-    grads['W2'] = np.dot(a1.T, dscores)
+    grads['W2'] = np.dot(hidden_layer.T, dscores)
     grads['b2'] = np.sum(dscores, axis=0)
     # next backprop into hidden layer
     dhidden = np.dot(dscores, W2.T)
     # backprop the ReLU non-linearity
-    dhidden[a1 <= 0] = 0
+    dhidden[hidden_layer <= 0] = 0
     # finally into W,b
     grads['W1'] = np.dot(X.T, dhidden)
     grads['b1'] = np.sum(dhidden, axis=0)
@@ -196,6 +197,12 @@ class TwoLayerNet(object):
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
       pass
+      #ind = random.randrange(0,num_train)
+      ind = np.random.choice(num_train,batch_size, True)
+      X_batch = X[ind]
+      y_batch = y[ind]
+      print X_batch
+      print y_batch
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -210,7 +217,10 @@ class TwoLayerNet(object):
       # using stochastic gradient descent. You'll need to use the gradients   #
       # stored in the grads dictionary defined above.                         #
       #########################################################################
-      pass
+            
+      for var in self.params:
+        self.params[var] = self.params[var] - learning_rate*grads[var]
+
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -256,6 +266,13 @@ class TwoLayerNet(object):
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
     pass
+    X1 = np.maximum( (X.dot(self.params['W1']) + self.params['b1']), 0)
+    X2 = X1.dot(self.params['W2'] + self.params['b2'])
+    
+    scores = pow(math.e, X2)
+    exp_scores = (scores.T/ np.sum(scores, axis=1)).T
+    
+    y_pred = np.argmax(exp_scores,axis=1)
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################
